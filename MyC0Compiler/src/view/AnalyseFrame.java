@@ -20,9 +20,12 @@ import generate.regis;
 
 public class AnalyseFrame extends JFrame implements DocumentListener {
 
+	
 	/**
 	 * 
 	 */
+	private static final long serialVersionUID = 1L;
+
 	// 文件名
 	String filename;
 
@@ -54,6 +57,7 @@ public class AnalyseFrame extends JFrame implements DocumentListener {
 	 * 临时
 	 */
 	token CurrentToken = new token();
+	
 	symble Currentsymble = new symble();
 
 	symble[] SymbleList = new symble[100];
@@ -1679,8 +1683,13 @@ Declear_BeforeMain()中VarList[var_count]的值：	null
 		rtn = 0;
 		InitStack();
 		rtn = LineOfEqu + 1;
+		
 		System.out.print("\n" + "子函数调用! " + tokenList[token_pos + 1].getcode()
 				+ " " + LineOfEqu + "\n");
+		/*
+		 * ( 32
+		 * 不是函数
+		 */
 		if (code == 27 && tokenList[token_pos + 1].getcode() != 32) {
 			addr = address;
 			if (a != 0)
@@ -1688,6 +1697,9 @@ Declear_BeforeMain()中VarList[var_count]的值：	null
 			var_count++;
 			GetNext();
 			token_pos++;
+			/*
+			 * = 41
+			 */
 			if (code == 41) {
 				flag = E_Analize();
 				if (flag != 0) {
@@ -1713,13 +1725,28 @@ Declear_BeforeMain()中VarList[var_count]的值：	null
 				}
 			}
 			if (find_pro(addr) != -1) {
+				/*
+				 * case 19:
+				writer.write(":=x ");
+				 *case 6:
+				writer.write("j ");
+				 *case 18:
+				writer.write("call ");
+
+				 */
 				EquPush(19, LineOfEqu, 0, 5001);
 				EquPush(6, 0, 0, find_pro(addr) + 1);
 				EquPush(18, 0, 0, addr);
+				
 			}
 			GetNext();
 			token_pos++;
 		} else
+			/*
+			 * case 7:
+			inTextArea1.append("error" + "第" + LineOfPro + "赋值语句出错\n");
+			break;
+			 */
 			Error(7);
 		return rtn;
 	}
@@ -1755,6 +1782,9 @@ Declear_BeforeMain()中VarList[var_count]的值：	null
 	public int L_Analize() {
 		int rtn = 0;
 		switch (code) {
+		/*
+		 * 标识符 27
+		 */
 		case 27:
 			S_Let(0);
 			rtn = E_rtn;
@@ -2368,6 +2398,7 @@ Declear_BeforeMain()中VarList[var_count]的值：	null
 
 	// 算术表达式分析
 	public int E_Analize() {
+		
 		int ans;
 		ans = 0;
 		now_addr = 0;
@@ -2386,6 +2417,7 @@ Declear_BeforeMain()中VarList[var_count]的值：	null
 			stack_expr[i].setcode(0);
 			stack_expr[i].setaddr(0);
 		}
+		
 		if (printf_num)
 			Push(code, address);
 
@@ -2396,17 +2428,34 @@ Declear_BeforeMain()中VarList[var_count]的值：	null
 			case 27:
 				Push(code, address);
 				break;
+				/*
+				 * 整常数
+				 */
 			case 28:
 				Push(code, address);
 				break;
+				/*
+				 * 实常数
+				 */
 			case 29:
 				Push(code, address);
 				break;
+				/*
+				 * ( 32
+				 */
 			case 32:
 				Push(code, address);
 				j++;
 				break;
+				/*
+				 * ) 33
+				 */
+				
+				
 			case 33:
+				/*
+				 * 如果j=0,说明，）前面没有（
+				 */
 				if (j == 0) {
 					flag = false;
 					break;
@@ -2414,6 +2463,13 @@ Declear_BeforeMain()中VarList[var_count]的值：	null
 					j--;
 				Push(code, address);
 				break;
+				/*
+				 *
+* 34
++ 35
+- 36
+, 37
+				 */
 			case 34:
 				Push(code, address);
 				break;
@@ -2426,9 +2482,15 @@ Declear_BeforeMain()中VarList[var_count]的值：	null
 			case 37:
 				Push(code, address);
 				break;
+				/*
+				 * / 39
+				 */
 			case 39:
 				Push(code, address);
 				break;
+				/*
+				 * % 56
+				 */
 			case 56:
 				Push(code, address);
 				break;
@@ -2454,6 +2516,10 @@ Declear_BeforeMain()中VarList[var_count]的值：	null
 	public int E1_AddSub(int a) {
 		int rtn, t1;
 		rtn = a;
+		/*
+		 * + 35
+- 36
+		 */
 		if (stack_expr[now_addr].getcode() == 35
 				|| stack_expr[now_addr].getcode() == 36) {
 			int op = stack_expr[now_addr++].getcode();
@@ -2485,6 +2551,7 @@ Declear_BeforeMain()中VarList[var_count]的值：	null
 		return rtn;
 	}
 
+	
 	/*
 	 * 除法 求余
 	 */
@@ -2499,6 +2566,12 @@ Declear_BeforeMain()中VarList[var_count]的值：	null
 	public int T1_MulDiv(int a) {
 		int rtn, t1;
 		rtn = a;
+		/*
+		 *
+* 34
+/ 39
+% 56
+		 */
 		if (stack_expr[now_addr].getcode() == 34
 				|| stack_expr[now_addr].getcode() == 39
 				|| stack_expr[now_addr].getcode() == 56) {
@@ -2508,6 +2581,11 @@ Declear_BeforeMain()中VarList[var_count]的值：	null
 			if (op == 34) {
 				if (E_Contrl) {
 					E_Contrl = false;
+					/*
+					 * case 4:
+				writer.write("* ");
+
+					 */
 					E_rtn = EquPush(4, rtn, opr2, t1);
 				} else {
 					EquPush(4, rtn, opr2, t1);
@@ -2541,43 +2619,90 @@ Declear_BeforeMain()中VarList[var_count]的值：	null
 		int rtn = 0;
 		int prev = 5003;
 		int addr;
+		/*
+		 * ( 32
+		 */
 		if (stack_expr[now_addr].getcode() == 32) {
 			now_addr++;
 			rtn = E_AddSub();
 		} else {
 			switch (stack_expr[now_addr].getcode()) {
+			/*
+			 * 标志符 27
+			 */
 			case 27:
 				addr = now_addr;
+				/*
+				 * ( 32
+				 */
 				if (stack_expr[now_addr + 1].getcode() == 32) {
 					System.out.print("获得分程序入口! " + now_addr + " " + LineOfEqu
 							+ "\n");
 					now_addr++;
+					/*
+					 * ) 33
+					 */
+					
+					/*
+					 * while这里要做的就是将函数调用里边的参数存入
+					 * stack_expr[]中
+					 * 
+					 * 同时，指明四元式的操作为：
+					 * EquPush(1, stack_expr[now_addr].getaddr(), 0, prev);
+					 */
 					while (stack_expr[now_addr].getcode() != 33) {
 						System.out.print("跟踪stack_expr " + now_addr + " \n");
+						
 						if (stack_expr[now_addr].getcode() == 27
 								|| stack_expr[now_addr].getcode() == 28) {
+							
 							EquPush(1, stack_expr[now_addr].getaddr(), 0, prev);
 							prev += 2;
 						}
 						now_addr++;
+						/*
+						 * , 37
+						 */
 						if (stack_expr[now_addr].getcode() == 37)
 							now_addr++;
 					}
+					
+					
+					
+					/*
+					 * !=-1
+					 * 意味着找到了。
+					 */
 					if (find_pro(stack_expr[addr].getaddr()) != -1) {
+						/*
+						 * case 19:
+						writer.write(":=x ");
+						 *case 6:
+						writer.write("j ");
+						 *case 18:
+						writer.write("call ");
+						 */
 						EquPush(19, LineOfEqu, 0, 5001);
-						EquPush(6, 0, 0,
-								find_pro(stack_expr[addr].getaddr()) + 1);
+						EquPush(6, 0, 0,find_pro(stack_expr[addr].getaddr()) + 1);
 						EquPush(18, 0, 0, stack_expr[addr].getaddr());
 					}
+					
 				}
 				rtn = stack_expr[addr].getaddr();
 				break;
+				/*
+				 * getaddr()是为了填到函数定义时，
+				 * 对应的参数列表中。
+				 */
 			case 28:
 				rtn = stack_expr[now_addr].getaddr();
 				break;
 			case 29:
 				rtn = stack_expr[now_addr].getaddr();
 				break;
+				/*
+				 * 字符常数 30
+				 */
 			case 30:
 				rtn = stack_expr[now_addr].getaddr();
 				break;
@@ -2612,6 +2737,8 @@ Declear_BeforeMain()中VarList[var_count]的值：	null
 		for (i = 0; i < LineOfEqu; i++) {
 			/*
 			 * 操作编码为16？
+			 * case 16:
+				writer.write("BP ");
 			 */
 			if (Equ[i].getresult() == temp && Equ[i].getop() == 16)
 				return i;
@@ -3216,7 +3343,7 @@ SymbleList[k].getname():	14
 		pos++;
 	}
 
-	// 产生临时变量
+	// 临时变量还剩下的个数。
 	public int NewTemp() {
 		int a;
 		temp_count--;
